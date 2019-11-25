@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "670529527131-cg3175qhflvoguha8c3lhk5ruch7cim8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lakehead.shoppinglist",
+            "certificate_hash": "ff9f2dab0c3b4d2aa3094940ecac917a0f8c53c7"
+          }
+        },
+        {
           "client_id": "670529527131-0lng0379ukc048e1pop7qj9q7jie6ldc.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -36,7 +44,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "670529527131-is1fvf0nhrh30guu58cc83j3jfd7640i.apps.googleusercontent.com",
+              "client_id": "670529527131-thjl372cfgctfet8f9n28oh1ncev2g8g.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

@@ -16,11 +16,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.android.synthetic.main.activity_login.*
 
-val RC_SIGN_IN: Int = 1
-lateinit var mGoogleSignInClient: GoogleSignInClient
-lateinit var mGoogleSignInOptions: GoogleSignInOptions
-
 class LoginActivity : AppCompatActivity() {
+
+    val RC_SIGN_IN: Int = 1
+    private lateinit var firebaseAuth: FirebaseAuth
+    lateinit var mGoogleSignInClient: GoogleSignInClient
+    lateinit var mGoogleSignInOptions: GoogleSignInOptions
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,11 +34,14 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
+        //Check to see if the user is already signed in (non-null):
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
             startActivity(MainActivity.getLaunchIntent(this))
             finish()
         }
+
     }
 
     private fun configureGoogleSignIn() {
@@ -54,13 +58,24 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    //Function to sign in existing users for the app:
     private fun signIn() {
         val signInIntent: Intent = mGoogleSignInClient.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
+    //Function to register new users for the app:
+    private fun createAccount(){
+
+        //firebaseAuth.createUserWithEmailAndPassword()
+
+    }
+
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        //Result from Google Login Activity
         if (requestCode == RC_SIGN_IN) {
             val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
@@ -74,7 +89,6 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private lateinit var firebaseAuth: FirebaseAuth
     private fun firebaseAuthWithGoogle(acct: GoogleSignInAccount) {
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
@@ -82,7 +96,7 @@ class LoginActivity : AppCompatActivity() {
 
                 startActivity(MainActivity.getLaunchIntent(this))
             } else {
-                Toast.makeText(this, "Google sign in failed:(", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Firebase auth failed:(", Toast.LENGTH_LONG).show()
             }
         }
     }

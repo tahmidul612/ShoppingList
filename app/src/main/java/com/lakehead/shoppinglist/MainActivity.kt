@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 
-//Comment to Test Commits fjnasjkdfnjksdnfjksdnsdj
+//Comment to Test Commits
 
 class MainActivity : AppCompatActivity() {
     val items = mutableListOf<String>("Onions", "Bread", "Chicken")

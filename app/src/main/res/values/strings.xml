@@ -4,4 +4,6 @@
     <string name="settings_text">This is the settings activity</string>
     <string name="sign_out">Sign Out</string>
     <string name="list_item_name">Item name</string>
+    <string name="loginActivityAppTitle">List App Name - Some catchy slogan</string>
+    <string name="loginActivitySignInMessage">Welcome, Please sign in.</string>
 </resources>

@@ -8,6 +8,23 @@
     android:padding="16dp"
     tools:context=".LoginActivity">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="22sp"
+        android:text="@string/loginActivityAppTitle"
+        android:textAlignment="center"
+        android:layout_marginBottom="200dp"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/loginActivitySignInMessage"
+        android:textAlignment="center"
+        android:paddingBottom="20dp"
+        />
+
     <com.google.android.gms.common.SignInButton
         android:id="@+id/google_button"
         android:layout_width="wrap_content"

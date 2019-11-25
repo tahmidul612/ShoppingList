@@ -16,5 +16,8 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(LoginActivity.getLaunchIntent(this))
             FirebaseAuth.getInstance().signOut()
         }
+        google_map_button.setOnClickListener {
+            startActivity(MapsActivity.getLaunchIntent(this))
+        }
     }
 }

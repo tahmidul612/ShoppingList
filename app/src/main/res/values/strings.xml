@@ -10,4 +10,6 @@
     <string name="cost">Cost</string>
     <string name="quantity">Quantity</string>
     <string name="name">Name</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="map_button_text">Open Map</string>
 </resources>

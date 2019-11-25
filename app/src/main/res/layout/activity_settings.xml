@@ -11,10 +11,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/google_map_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/map_button_text" />
     <Button
         android:id="@+id/signOut"
         android:layout_height="wrap_content"
         android:padding="16dp"
+        android:gravity="bottom"
         android:layout_width="match_parent"
         android:text="@string/sign_out" />
 

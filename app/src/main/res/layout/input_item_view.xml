@@ -1,31 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
+    android:padding="16dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/inputName"
+    <!-- Using textInput layout enables clicking next on keyboard
+         to go to the next field -->
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/name"
-        android:inputType="textAutoComplete"
-        android:importantForAutofill="no" />
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:id="@+id/inputCost"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/cost"
-        android:inputType="numberDecimal"
-        android:importantForAutofill="no" />
+        <EditText
+            android:id="@+id/inputName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/name"
+            android:imeOptions="actionNext"
+            android:importantForAutofill="no"
+            android:inputType="textAutoComplete" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <EditText
-        android:id="@+id/inputQuantity"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/quantity"
-        android:inputType="number"
-        android:importantForAutofill="no" />
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/inputCost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/cost"
+            android:imeOptions="actionNext"
+            android:importantForAutofill="no"
+            android:inputType="numberDecimal" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/inputQuantity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/quantity"
+            android:imeOptions="actionDone"
+            android:importantForAutofill="no"
+            android:inputType="number" />
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

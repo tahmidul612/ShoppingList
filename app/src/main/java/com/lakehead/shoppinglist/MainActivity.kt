@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.InputType
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
@@ -38,23 +37,35 @@ class MainActivity : AppCompatActivity() {
 
     private fun addNewItem() {
         add_item_button.setOnClickListener {
+
+            //Create a new alert dialog
             val builder = AlertDialog.Builder(this)
-            builder.setTitle("Please enter item name")
-            val input = EditText(this)
-            input.inputType = InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE
-            builder.setView(input)
-            builder.setPositiveButton("OK") { _, _ ->
-                val itemTxt = input.text
+            builder.setTitle("Please enter item details:")
+            val inflater = layoutInflater
+
+            //Get a layout for inputting multiple values:
+            val inputLayout = inflater.inflate(R.layout.input_item_view, null)
+            val inputItemName = inputLayout.findViewById<EditText>(R.id.inputName)
+            //val inputItemCost = inputLayout.findViewById<EditText>(R.id.inputCost)
+            //val inputItemQuantity = inputLayout.findViewById<EditText>(R.id.inputQuantity)
+
+            builder.setView(inputLayout)
+
+            builder.setPositiveButton("Submit") { _, _ ->
+                val itemTxt = inputItemName.text
                 items.add(itemTxt.toString())
                 viewAdapter.notifyItemInserted(items.size - 1)
             }
             builder.setNeutralButton("Cancel") { _, _ ->
                 Toast.makeText(applicationContext, "Cancelled", Toast.LENGTH_LONG).show()
             }
+
+            //Display the dialog box:
             val dialog = builder.create()
             dialog.show()
         }
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.bottom_app_bar_menu, menu)

@@ -6,4 +6,8 @@
     <string name="list_item_name">Item name</string>
     <string name="loginActivityAppTitle">List App Name - Some catchy slogan</string>
     <string name="loginActivitySignInMessage">Welcome, Please sign in.</string>
+    <string name="titleBarAppName">List App Name</string>
+    <string name="cost">Cost</string>
+    <string name="quantity">Quantity</string>
+    <string name="name">Name</string>
 </resources>

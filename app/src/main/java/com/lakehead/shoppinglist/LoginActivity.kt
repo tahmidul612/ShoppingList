@@ -38,8 +38,10 @@ class LoginActivity : AppCompatActivity() {
         //Check to see if the user is already signed in (non-null):
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
-            startActivity(MainActivity.getLaunchIntent(this))
-            finish()
+            val userId:String = user.uid
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("userId", userId)
+            startActivity(intent)
         }
 
     }
@@ -64,14 +66,6 @@ class LoginActivity : AppCompatActivity() {
         startActivityForResult(signInIntent, RC_SIGN_IN)
     }
 
-    //Function to register new users for the app:
-    private fun createAccount(){
-
-        //firebaseAuth.createUserWithEmailAndPassword()
-
-    }
-
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -93,8 +87,12 @@ class LoginActivity : AppCompatActivity() {
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
         firebaseAuth.signInWithCredential(credential).addOnCompleteListener {
             if (it.isSuccessful) {
+                val user = FirebaseAuth.getInstance().currentUser
+                val userId:String? = user?.uid
+                val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("userId", userId)
+                startActivity(intent)
 
-                startActivity(MainActivity.getLaunchIntent(this))
             } else {
                 Toast.makeText(this, "Firebase auth failed:(", Toast.LENGTH_LONG).show()
             }

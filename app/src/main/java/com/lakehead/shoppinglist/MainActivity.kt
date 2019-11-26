@@ -31,10 +31,11 @@ class MainActivity : AppCompatActivity() {
         //Ensure user is logged in:
         val userId:String? = intent.getStringExtra("userId")
         if (userId == null){
+            //User ID not found, return user to the login activity to re-sign-in.
             finish()
-            Toast.makeText(applicationContext, "Sign-in Failure. Redirecting to Login.", Toast.LENGTH_LONG).show()
             startActivity(LoginActivity.getLaunchIntent(applicationContext))
         }else{
+            //User ID found, activity can continue.
             Toast.makeText(applicationContext, "Signed in with UID $userId", Toast.LENGTH_LONG).show()
         }
 
@@ -42,22 +43,28 @@ class MainActivity : AppCompatActivity() {
         val userDoc = db.collection("users").document("user_$userId")
             .get()
             .addOnSuccessListener { document ->
-                if (document != null) {
-                    //TODO: list the items
+                if (document.data != null) {
+
+                    //get the list data
                     var data = document.data!!["list1"].toString()
+
                     //TODO: Create a regex to replace this ugly shit:
+                    //Remove unwanted tokens:
                     data = data.replace("{", "")
                     data = data.replace("}", "")
                     data = data.replace("[", "")
                     data = data.replace("]", "")
                     data = data.replace(",", "")
+                    //Replace itemQuantity and itemCost labels:
                     data = data.replace("itemQuantity=", ", ")
                     data = data.replace("itemCost=", ", \$")
 
+                    //Split the string into a mutable list of strings, seperated by entry
                     val newItems = data.split("itemName=")
 
                     //TODO: parse the new items into mutable list more efficiently and add to database
 
+                    //Update the view to reflect changes:
                     viewManager = LinearLayoutManager(this)
                     viewAdapter = MyAdapter(newItems.toMutableList())
                     recyclerView = my_recycler_view.apply {
@@ -65,7 +72,7 @@ class MainActivity : AppCompatActivity() {
                         adapter = viewAdapter
                     }
                 } else {
-                    //If for some reason there are no entries, put some placeholder data there
+                    //If for some reason there are no entries, put some placeholder data there and update the view
                     viewManager = LinearLayoutManager(this)
                     viewAdapter = MyAdapter(items)
                     recyclerView = my_recycler_view.apply {
@@ -102,14 +109,19 @@ class MainActivity : AppCompatActivity() {
 
             builder.setView(inputLayout)
 
+            //Sets the action when "Submit" is pressed:
             builder.setPositiveButton("Submit") { _, _ ->
+                //Get the raw input values to be added to the database:
                 val itemTxt        = inputItemName.text.toString()
                 val costAmt:Double = inputItemCost.text.toString().toDouble()
                 val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
+                //Add the entry to the list
                 addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
                 viewAdapter.notifyItemInserted(items.size - 1)
             }
+            //Sets the action when "Cancel" is pressed:
             builder.setNeutralButton("Cancel") { _, _ ->
+                //Display a message to the user saying they cancelled input.
                 Toast.makeText(applicationContext, "Cancelled", Toast.LENGTH_LONG).show()
             }
 
@@ -128,6 +140,7 @@ class MainActivity : AppCompatActivity() {
             .addOnSuccessListener { document ->
                 if (document.exists()) {
 
+                    //Welcomes back an existing user
                     Toast.makeText(applicationContext, "Welcome Back!", Toast.LENGTH_LONG).show();
 
                 }

@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
@@ -41,21 +40,22 @@ class MainActivity : AppCompatActivity() {
         val userId:String? = intent.getStringExtra("userId")
         if (userId == null){
             finish()
-            Toast.makeText(applicationContext, "Failed to sign in. Redirecting to Login.", Toast.LENGTH_LONG).show()
+            Toast.makeText(applicationContext, "Sign-in Failure. Redirecting to Login.", Toast.LENGTH_LONG).show()
             startActivity(LoginActivity.getLaunchIntent(applicationContext))
         }else{
             Toast.makeText(applicationContext, "Signed in with UID $userId", Toast.LENGTH_LONG).show()
         }
 
         //Testing Firestore:
-        createUser("user_" + userId)
-        addItemToList("user_$userId", "list1", "Apple", 3.00, 1)
+        createUser("user_$userId") //Only creates if the user does not already exist in FireStore
+        addItemToList("user_$userId", "list1", "Apple", 3.00, 1) //Example
 
-        addNewItemBtnListener()
+        val currentList:String = "list1"
+        addNewItemBtnListener("user_$userId", currentList)
 
     }
 
-    private fun addNewItemBtnListener() {
+    private fun addNewItemBtnListener(userId:String, listName:String) {
         add_item_button.setOnClickListener {
 
             //Create a new alert dialog
@@ -66,14 +66,17 @@ class MainActivity : AppCompatActivity() {
             //Get a layout for inputting multiple values:
             val inputLayout = inflater.inflate(R.layout.input_item_view, null)
             val inputItemName = inputLayout.findViewById<EditText>(R.id.inputName)
-            //val inputItemCost = inputLayout.findViewById<EditText>(R.id.inputCost)
-            //val inputItemQuantity = inputLayout.findViewById<EditText>(R.id.inputQuantity)
+            val inputItemCost = inputLayout.findViewById<EditText>(R.id.inputCost)
+            val inputItemQuantity = inputLayout.findViewById<EditText>(R.id.inputQuantity)
 
             builder.setView(inputLayout)
 
             builder.setPositiveButton("Submit") { _, _ ->
-                val itemTxt = inputItemName.text
-                items.add(itemTxt.toString())
+                val itemTxt        = inputItemName.text.toString()
+                val costAmt:Double = inputItemCost.text.toString().toDouble()
+                val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
+                items.add(itemTxt) //TODO Remove when FireStore Integration complete
+                addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
                 viewAdapter.notifyItemInserted(items.size - 1)
             }
             builder.setNeutralButton("Cancel") { _, _ ->
@@ -95,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             .addOnSuccessListener { document ->
                 if (document.exists()) {
 
-                    // Do nothing, the user already exists
+                    Toast.makeText(applicationContext, "Welcome Back!", Toast.LENGTH_LONG).show();
 
                 }
                 else //The user does not exist, create them:
@@ -122,6 +125,8 @@ class MainActivity : AppCompatActivity() {
                     //Remove the temporary entry: will convert list from hashmap to an array internally within FireStore.
                     db.collection("users").document(user).update("list1", FieldValue.arrayRemove(tempEntry))
 
+                    Toast.makeText(applicationContext, "Created a starting list for you!",Toast.LENGTH_LONG).show()
+
                 }
             }
             .addOnFailureListener { exception ->
@@ -132,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
 
     //Internal function to add a new list item to the FireStore database
-    private fun addItemToList(user : String, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
+    private fun addItemToList(user : String?, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
 
         //Ensure user is logged in (their token is not null):
         if (user != null){
@@ -156,9 +161,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     //Internal function to remove a list item from the FireStore database
-    private fun removeItemFromList(user: String, listName: String, itemName: String, itemCost: Double, itemQuantity: String){
+    private fun removeItemFromList(user: String?, listName: String, itemName: String, itemCost: Double, itemQuantity: String){
 
-        if (user!=null){
+        if (user != null){
 
             val userDoc = db.collection("users").document(user)
 

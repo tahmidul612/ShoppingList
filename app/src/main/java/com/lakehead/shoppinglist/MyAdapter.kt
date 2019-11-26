@@ -16,7 +16,7 @@ class MyAdapter(private var dataSet: MutableList<String>) : RecyclerView.Adapter
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.textView.text = dataSet[position]
+        holder.textView.text = dataSet[position].toString()
     }
 
     override fun getItemCount() = dataSet.size

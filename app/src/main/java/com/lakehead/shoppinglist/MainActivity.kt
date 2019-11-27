@@ -20,8 +20,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewManager: RecyclerView.LayoutManager
 
     //Connect to FireStore Database to Retrieve List Items:
-    val db = FirebaseFirestore.getInstance()
-    var items:MutableList<String> = mutableListOf("Add a new Entry!")
+    private val db = FirebaseFirestore.getInstance()
+    private var items:MutableList<String> = mutableListOf("Add a new Entry!")
+    private var currentList:String = "list1"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity() {
                 if (document.data != null) {
 
                     //get the list data
-                    var data = document.data!!["list1"].toString()
+                    var data = document.data!![currentList].toString()
 
                     //TODO: Create a regex to replace this ugly shit:
                     //Remove unwanted tokens:
@@ -56,39 +57,38 @@ class MainActivity : AppCompatActivity() {
                     data = data.replace("]", "")
                     data = data.replace(",", "")
                     //Replace itemQuantity and itemCost labels:
-                    data = data.replace("itemQuantity=", ", ")
-                    data = data.replace("itemCost=", ", \$")
+                    data = data.replace("itemQuantity=", "")
+                    data = data.replace("itemCost=", "\$")
 
-                    //Split the string into a mutable list of strings, seperated by entry
+                    //TODO: parse the new items into mutable list of strings more efficiently
+                    //Split the string into a mutable list of strings, separated by entry
                     val newItems = data.split("itemName=")
+                    items = newItems.toMutableList();
 
-                    //TODO: parse the new items into mutable list more efficiently and add to database
-
-                    //Update the view to reflect changes:
-                    viewManager = LinearLayoutManager(this)
-                    viewAdapter = MyAdapter(newItems.toMutableList())
-                    recyclerView = my_recycler_view.apply {
-                        layoutManager = viewManager
-                        adapter = viewAdapter
-                    }
-                } else {
-                    //If for some reason there are no entries, put some placeholder data there and update the view
+                    //Populate the RecyclerView with item list:
                     viewManager = LinearLayoutManager(this)
                     viewAdapter = MyAdapter(items)
                     recyclerView = my_recycler_view.apply {
                         layoutManager = viewManager
                         adapter = viewAdapter
                     }
+
                 }
             }.addOnFailureListener{
-                //to do
+
+                //Populate the RecyclerView with item list:
+                viewManager = LinearLayoutManager(this)
+                viewAdapter = MyAdapter(items)
+                recyclerView = my_recycler_view.apply {
+                    layoutManager = viewManager
+                    adapter = viewAdapter
+                }
+
             }
 
-        //Testing FireStore:
-        createUser("user_$userId") //Only creates if the user does not already exist in FireStore
-        addItemToList("user_$userId", "list1", "Apple", 3.00, 1) //Example
+        //Ensure the user has a FireStore document:
+        createUser("user_$userId") //Should only create if the user does not already exist in FireStore
 
-        val currentList:String = "list1"
         addNewItemBtnListener("user_$userId", currentList)
 
     }

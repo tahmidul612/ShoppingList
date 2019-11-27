@@ -72,6 +72,10 @@ class MainActivity : AppCompatActivity() {
                     val newItems = data.split("itemName=")
                     items = newItems.toMutableList();
 
+                    //Remove the first item in the list, which for some reason is always empty.
+                    if (items[0].isBlank())
+                        items.removeAt(0)
+
                     //Populate the RecyclerView with item list:
                     viewManager = LinearLayoutManager(this)
                     val dividerItemDecoration = DividerItemDecoration(

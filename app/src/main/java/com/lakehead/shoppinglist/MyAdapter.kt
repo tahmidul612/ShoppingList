@@ -32,7 +32,7 @@ class MyAdapter(private var dataSet: MutableList<String>) : RecyclerView.Adapter
             quanView.text = currentItem[1]
             costView.text = currentItem[2]
         }else if (currentItem.size == 1)
-            nameView.text = currentItem[0]
+            nameView.text = "Empty Row"
         else
             nameView.text = "Item Listing Error"
 

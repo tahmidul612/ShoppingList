@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(bottom_app_bar)
 
         //Ensure user is logged in:
+
         val userId:String? = intent.getStringExtra("userId")
         if (userId == null){
             //User ID not found, return user to the login activity to re-sign-in.
@@ -82,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                         my_recycler_view.context,
                         1
                     )
-                    viewAdapter = MyAdapter(items)
+                    viewAdapter = MyAdapter(items, currentList,"user_$userId")
                     recyclerView = my_recycler_view.apply {
                         layoutManager = viewManager
                         adapter = viewAdapter
@@ -94,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
                 //Populate the RecyclerView with item list:
                 viewManager = LinearLayoutManager(this)
-                viewAdapter = MyAdapter(items)
+                viewAdapter = MyAdapter(items, currentList,"user_$userId")
                 recyclerView = my_recycler_view.apply {
                     layoutManager = viewManager
                     adapter = viewAdapter
@@ -194,50 +195,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
-    //Internal function to add a new list item to the FireStore database
-    private fun addItemToList(user : String?, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
-
-        //Ensure user is logged in (their token is not null):
-        if (user != null){
-
-            val userDoc = db.collection("users").document(user)
-
-            //Update the list with the new entry:
-            val newEntry = object {
-                val itemName = itemName
-                val itemCost = itemCost
-                val itemQuantity = itemQuantity
-            }
-
-            userDoc.update(listName, FieldValue.arrayUnion(newEntry))
-
-        }
-        else{
-            finish()
-        }
-
-    }
-
-    //Internal function to remove a list item from the FireStore database
-    private fun removeItemFromList(user: String?, listName: String, itemName: String, itemCost: Double, itemQuantity: String){
-
-        if (user != null){
-
-            val userDoc = db.collection("users").document(user)
-
-            val entryToDelete = object {
-                val itemName = itemName
-                val itemCost = itemCost
-                val itemQuantity = itemQuantity
-            }
-
-            userDoc.update(listName, FieldValue.arrayRemove(entryToDelete))
-
-        }
-
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         val inflater = menuInflater
         inflater.inflate(R.menu.bottom_app_bar_menu, menu)
@@ -259,4 +216,32 @@ class MainActivity : AppCompatActivity() {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
     }
+
+    //Internal function to add a new list item to the FireStore database
+    fun addItemToList(user : String?, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
+
+        //Ensure user is logged in (their token is not null):
+        if (user != null){
+
+            val userDoc = db.collection("users").document(user)
+
+            //Update the list with the new entry:
+            val newEntry = object {
+                val itemName = itemName
+                val itemCost = itemCost
+                val itemQuantity = itemQuantity
+            }
+
+            userDoc.update(listName, FieldValue.arrayUnion(newEntry))
+
+            return
+
+        }
+        else{
+            finish()
+        }
+
+    }
 }
+
+

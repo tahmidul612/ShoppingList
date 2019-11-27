@@ -13,6 +13,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.*
 import kotlinx.android.synthetic.main.activity_main.*
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.core.app.ComponentActivity.ExtraData
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
@@ -56,9 +62,10 @@ class MainActivity : AppCompatActivity() {
                     data = data.replace("[", "")
                     data = data.replace("]", "")
                     data = data.replace(",", "")
+                    data = data.replace(" ", "")
                     //Replace itemQuantity and itemCost labels:
-                    data = data.replace("itemQuantity=", "")
-                    data = data.replace("itemCost=", "\$")
+                    data = data.replace("itemQuantity=", "\t")
+                    data = data.replace("itemCost=", "\t\$")
 
                     //TODO: parse the new items into mutable list of strings more efficiently
                     //Split the string into a mutable list of strings, separated by entry
@@ -67,11 +74,16 @@ class MainActivity : AppCompatActivity() {
 
                     //Populate the RecyclerView with item list:
                     viewManager = LinearLayoutManager(this)
+                    val dividerItemDecoration = DividerItemDecoration(
+                        my_recycler_view.context,
+                        1
+                    )
                     viewAdapter = MyAdapter(items)
                     recyclerView = my_recycler_view.apply {
                         layoutManager = viewManager
                         adapter = viewAdapter
                     }
+                    my_recycler_view.addItemDecoration(dividerItemDecoration)
 
                 }
             }.addOnFailureListener{

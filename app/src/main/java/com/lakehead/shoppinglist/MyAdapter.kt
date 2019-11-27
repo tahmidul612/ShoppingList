@@ -24,7 +24,18 @@ class MyAdapter(private var dataSet: MutableList<String>) : RecyclerView.Adapter
         val nameView:TextView = holder.layoutView.getChildAt(0) as TextView
         val quanView:TextView = holder.layoutView.getChildAt(1) as TextView
         val costView:TextView = holder.layoutView.getChildAt(2) as TextView
-        nameView.text = dataSet[position]
+
+        val currentItem = dataSet[position].split("\t")
+
+        if(currentItem.size == 3){
+            nameView.text = currentItem[0]
+            quanView.text = currentItem[1]
+            costView.text = currentItem[2]
+        }else if (currentItem.size == 1)
+            nameView.text = currentItem[0]
+        else
+            nameView.text = "Item Listing Error"
+
     }
 
     override fun getItemCount() = dataSet.size

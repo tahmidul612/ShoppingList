@@ -1,9 +1,7 @@
 <resources>
     <string name="app_name">Shopping List</string>
     <string name="action_settings">Settings</string>
-    <string name="settings_text">Settings</string>
     <string name="sign_out">Sign Out</string>
-    <string name="list_item_name">Item name</string>
     <string name="loginActivityAppTitle">LuList - Easy Shopping List</string>
     <string name="loginActivitySignInMessage">Welcome, Please sign in.</string>
     <string name="titleBarAppName">LuList - Easy Shopping List</string>
@@ -12,4 +10,7 @@
     <string name="name">Name</string>
     <string name="title_activity_maps">Map</string>
     <string name="map_button_text">Open Map</string>
+    <string name="anonymous_sign_in_button">Skip sign in</string>
+    <string name="editButton_contentDescription">Edit Item</string>
+    <string name="deleteItem_contentDescription">Delete Item</string>
 </resources>

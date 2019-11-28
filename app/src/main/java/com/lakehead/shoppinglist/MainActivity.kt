@@ -7,17 +7,16 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.firestore.*
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.android.synthetic.main.activity_main.*
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import android.widget.LinearLayout
 
 
 class MainActivity : AppCompatActivity() {
@@ -34,7 +33,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(bottom_app_bar)
-
         //Ensure user is logged in:
 
         val userId:String? = intent.getStringExtra("userId")
@@ -71,7 +69,7 @@ class MainActivity : AppCompatActivity() {
                     //TODO: parse the new items into mutable list of strings more efficiently
                     //Split the string into a mutable list of strings, separated by entry
                     val newItems = data.split("itemName=")
-                    items = newItems.toMutableList();
+                    items = newItems.toMutableList()
 
                     //Remove the first item in the list, which for some reason is always empty.
                     if (items[0].isBlank())
@@ -114,15 +112,14 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun addItemDialog(userId:String, listName:String){
+    private fun addItemDialog(userId: String, listName: String) {
 
         //Create a new alert dialog
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Please enter item details:")
-        val inflater = layoutInflater
 
         //Get a layout for inputting multiple values:
-        val inputLayout       = inflater.inflate(R.layout.input_item_view, null) as LinearLayout
+        val inputLayout = layoutInflater.inflate(R.layout.input_item_view, null) as LinearLayout
         val inputItemName     = inputLayout.findViewById<EditText>(R.id.inputName)
         val inputItemCost     = inputLayout.findViewById<EditText>(R.id.inputCost)
         val inputItemQuantity = inputLayout.findViewById<EditText>(R.id.inputQuantity)
@@ -163,7 +160,7 @@ class MainActivity : AppCompatActivity() {
                 if (document.exists()) {
 
                     //Welcomes back an existing user
-                    Toast.makeText(applicationContext, "Welcome Back!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(applicationContext, "Welcome Back!", Toast.LENGTH_LONG).show()
 
                 }
                 else //The user does not exist, create them:
@@ -217,13 +214,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun getLaunchIntent(from: Context) = Intent(from, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
+        fun getLaunchIntent(from: Context) = Intent(from, MainActivity::class.java)
     }
 
     //Internal function to add a new list item to the FireStore database
-    fun addItemToList(user : String, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
+    private fun addItemToList(
+        user: String?,
+        listName: String,
+        itemName: String,
+        itemCost: Double,
+        itemQuantity: Int
+    ) {
 
         //Ensure user is logged in (their token is not null):
         if (user != null){
@@ -233,8 +234,6 @@ class MainActivity : AppCompatActivity() {
             //Update the list with the new entry:
             val newEntry = object {
                 val itemName = itemName
-                val itemCost = itemCost
-                val itemQuantity = itemQuantity
             }
 
             userDoc.update(listName, FieldValue.arrayUnion(newEntry))

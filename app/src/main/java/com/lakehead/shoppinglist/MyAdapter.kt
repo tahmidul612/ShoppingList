@@ -5,13 +5,16 @@ import android.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.*
-import androidx.appcompat.widget.LinearLayoutCompat
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
-class MyAdapter(private var dataSet: MutableList<String>, var listName:String, var userId: String, var applicationContext:Activity) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
+class MyAdapter(
+    private var dataSet: MutableList<String>,
+    private var listName: String,
+    private var userId: String,
+    private var applicationContext: Activity
+) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     class MyViewHolder(val layoutView: LinearLayout) : RecyclerView.ViewHolder(layoutView)
 
@@ -114,7 +117,13 @@ class MyAdapter(private var dataSet: MutableList<String>, var listName:String, v
     }
 
     //Internal function to remove a list item from the FireStore database
-    fun removeItemFromList(user: String, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
+    private fun removeItemFromList(
+        user: String,
+        listName: String,
+        itemName: String,
+        itemCost: Double,
+        itemQuantity: Int
+    ) {
 
         if (user != "user_null" && user != "user_"){
 
@@ -123,8 +132,6 @@ class MyAdapter(private var dataSet: MutableList<String>, var listName:String, v
 
             val entryToDelete = object {
                 val itemName = itemName
-                val itemCost = itemCost
-                val itemQuantity = itemQuantity
             }
 
             userDoc.update(listName, FieldValue.arrayRemove(entryToDelete))
@@ -134,7 +141,13 @@ class MyAdapter(private var dataSet: MutableList<String>, var listName:String, v
     }
 
     //Internal function to add a new list item to the FireStore database
-    fun addItemToList(user : String, listName: String, itemName: String, itemCost: Double, itemQuantity: Int) {
+    private fun addItemToList(
+        user: String,
+        listName: String,
+        itemName: String,
+        itemCost: Double,
+        itemQuantity: Int
+    ) {
 
         //Ensure user is logged in (their token is not null):
         if (user != "user_null" && user != "user_") {
@@ -145,8 +158,6 @@ class MyAdapter(private var dataSet: MutableList<String>, var listName:String, v
             //Update the list with the new entry:
             val newEntry = object {
                 val itemName = itemName
-                val itemCost = itemCost
-                val itemQuantity = itemQuantity
             }
 
             userDoc.update(listName, FieldValue.arrayUnion(newEntry))

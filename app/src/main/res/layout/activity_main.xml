@@ -18,24 +18,23 @@
             android:id="@+id/topToolbar"
             android:layout_width="match_parent"
             android:layout_height="65sp"
-            android:title="@string/titleBarAppName"
-            android:titleTextColor="@color/colorLightText"
-            android:titleMarginTop="10sp"
             android:background="@color/colorPrimary"
             android:subtitle="List 1"
             android:subtitleTextColor="@color/colorLightText"
+            android:title="@string/titleBarAppName"
+            android:titleMarginTop="10sp"
 
+            android:titleTextColor="@color/colorLightText"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/my_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="60sp"
             android:padding="16dp"
             android:scrollbars="vertical"
-            android:layout_marginTop="60sp"
-            app:layout_constraintTop_toBottomOf="@id/topToolbar"
-            />
+            app:layout_constraintTop_toBottomOf="@id/topToolbar" />
 
         <com.google.android.material.bottomappbar.BottomAppBar
             android:id="@+id/bottom_app_bar"

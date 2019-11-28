@@ -1,22 +1,32 @@
 package com.lakehead.shoppinglist
 
 import android.app.AlertDialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.*
 import kotlinx.android.synthetic.main.activity_main.*
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.core.app.ComponentActivity.ExtraData
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.os.Build
+import android.preference.PreferenceManager
+import android.view.View
+import android.widget.LinearLayout
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import java.lang.Exception
 
 
 class MainActivity : AppCompatActivity() {
@@ -69,7 +79,7 @@ class MainActivity : AppCompatActivity() {
                     //TODO: parse the new items into mutable list of strings more efficiently
                     //Split the string into a mutable list of strings, separated by entry
                     val newItems = data.split("itemName=")
-                    items = newItems.toMutableList()
+                    items = newItems.toMutableList();
 
                     //Remove the first item in the list, which for some reason is always empty.
                     if (items[0].isBlank())
@@ -105,21 +115,22 @@ class MainActivity : AppCompatActivity() {
         createUser("user_$userId") //Should only create if the user does not already exist in FireStore
 
         add_item_button.setOnClickListener {
-
             addItemDialog("user_$userId", currentList)
 
         }
-
     }
 
-    private fun addItemDialog(userId: String, listName: String) {
+
+
+    fun addItemDialog(userId:String, listName:String){
 
         //Create a new alert dialog
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Please enter item details:")
+        val inflater = layoutInflater
 
         //Get a layout for inputting multiple values:
-        val inputLayout = layoutInflater.inflate(R.layout.input_item_view, null) as LinearLayout
+        val inputLayout       = inflater.inflate(R.layout.input_item_view, null) as LinearLayout
         val inputItemName     = inputLayout.findViewById<EditText>(R.id.inputName)
         val inputItemCost     = inputLayout.findViewById<EditText>(R.id.inputCost)
         val inputItemQuantity = inputLayout.findViewById<EditText>(R.id.inputQuantity)
@@ -129,14 +140,20 @@ class MainActivity : AppCompatActivity() {
         //Sets the action when "Submit" is pressed:
         builder.setPositiveButton("Submit") { _, _ ->
             //Get the raw input values to be added to the database:
+            try {
             val itemTxt        = inputItemName.text.toString()
             val costAmt:Double = inputItemCost.text.toString().toDouble()
             val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
             //Add the entry to the list, first to FireStore then the local list in the same format:
-            addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
-            items.add("$itemTxt\t$quanAmt\t\$$costAmt")
 
-            viewAdapter.notifyItemInserted(items.size - 1)
+                addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
+
+                items.add("$itemTxt\t$quanAmt\t\$$costAmt")
+
+                viewAdapter.notifyItemInserted(items.size - 1)
+            } catch (e: Exception) {
+                Toast.makeText(applicationContext, "Invalid Input. Make sure all fields are filled.", Toast.LENGTH_LONG).show()
+            }
         }
         //Sets the action when "Cancel" is pressed:
         builder.setNeutralButton("Cancel") { _, _ ->
@@ -160,7 +177,7 @@ class MainActivity : AppCompatActivity() {
                 if (document.exists()) {
 
                     //Welcomes back an existing user
-                    Toast.makeText(applicationContext, "Welcome Back!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(applicationContext, "Welcome Back!", Toast.LENGTH_LONG).show();
 
                 }
                 else //The user does not exist, create them:
@@ -214,17 +231,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun getLaunchIntent(from: Context) = Intent(from, MainActivity::class.java)
+        fun getLaunchIntent(from: Context) = Intent(from, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        }
     }
 
     //Internal function to add a new list item to the FireStore database
-    private fun addItemToList(
-        user: String?,
-        listName: String,
-        itemName: String,
-        itemCost: Double,
-        itemQuantity: Int
-    ) {
+    fun addItemToList(user : String, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
 
         //Ensure user is logged in (their token is not null):
         if (user != null){
@@ -234,6 +247,8 @@ class MainActivity : AppCompatActivity() {
             //Update the list with the new entry:
             val newEntry = object {
                 val itemName = itemName
+                val itemCost = itemCost
+                val itemQuantity = itemQuantity
             }
 
             userDoc.update(listName, FieldValue.arrayUnion(newEntry))
@@ -246,6 +261,34 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+    val CHANNEL_ID = "personal_notifications"
+    val NOTIFICATION_ID = 1
+
+    override fun onTrimMemory(level: Int) {
+
+        Thread.sleep(5000)
+        notifyCall()
+        super.onTrimMemory(level)
+    }
+
+    fun notifyCall() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+        var builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_sms_notification)
+            .setContentTitle("LUList")
+            .setContentText("Want to prepare a list?")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        var notify1 = NotificationManagerCompat.from(this)
+        notify1.notify(NOTIFICATION_ID, builder.build())
+    }
+
 }
 
 

@@ -61,8 +61,7 @@ class MyAdapter(
             editBtn.setOnClickListener{
 
                 //TODO: Write the edit function
-                removeItemFromList(userId, listName, itemName, itemCost.toDouble(), itemQuantity.toInt())
-                dataSet.removeAt(position)
+
 
                 //Create a new alert dialog
                 val builder = AlertDialog.Builder(applicationContext)
@@ -80,20 +79,24 @@ class MyAdapter(
                 //Sets the action when "Submit" is pressed:
                 builder.setPositiveButton("Submit") { _, _ ->
                     //Get the raw input values to be added to the database:
-                    val itemTxt        = inputItemName.text.toString()
+                    try{
+                        val itemTxt        = inputItemName.text.toString()
                     val costAmt:Double = inputItemCost.text.toString().toDouble()
                     val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
                     //Add the entry to the list, first to FireStore then the local list in the same format:
                     addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
                     dataSet.add("$itemTxt\t$quanAmt\t\$$costAmt")
-
+                        removeItemFromList(userId, listName, itemName, itemCost.toDouble(), itemQuantity.toInt())
+                        dataSet.removeAt(position)
                     //Update the view to reflect changes:
                     notifyItemRemoved(position)
                     notifyItemRangeChanged(position, itemCount - position)
 
                     notifyItemInserted(itemCount - 1)
                     notifyItemRangeChanged(position, itemCount - position)
-
+                    } catch (e: Exception) {
+                        Toast.makeText(applicationContext, "Invalid Input. Make sure all fields are filled.", Toast.LENGTH_LONG).show()
+                    }
                 }
                 //Sets the action when "Cancel" is pressed:
                 builder.setNeutralButton("Cancel") { _, _ ->

@@ -134,7 +134,6 @@ class MyAdapter(
             val userDoc = db.collection("users").document(user)
 
             val entryToDelete = object {
-                val itemName = itemName
             }
 
             userDoc.update(listName, FieldValue.arrayRemove(entryToDelete))
@@ -160,7 +159,6 @@ class MyAdapter(
 
             //Update the list with the new entry:
             val newEntry = object {
-                val itemName = itemName
             }
 
             userDoc.update(listName, FieldValue.arrayUnion(newEntry))

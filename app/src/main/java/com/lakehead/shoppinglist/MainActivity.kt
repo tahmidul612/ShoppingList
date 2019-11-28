@@ -10,8 +10,9 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -23,7 +24,6 @@ class MainActivity : AppCompatActivity() {
 
     //Connect to FireStore Database to Retrieve List Items:
     private val db = FirebaseFirestore.getInstance()
-    private var items:MutableList<String> = mutableListOf("Add a new Entry!")
     private var currentList: String = "Primary List"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -162,7 +162,6 @@ class MainActivity : AppCompatActivity() {
 //    }
 
     data class itemDataClass(
-        val itemName: String? = null,
         val itemCost: Double? = null,
         val itemQuantity: Int? = null
     )
@@ -194,14 +193,14 @@ class MainActivity : AppCompatActivity() {
 //            items.add("$itemTxt\t$quanAmt\t\$$costAmt")
 
             //Using a data class to store data
-            val item = itemDataClass(
-                inputItemName.text.toString(),
+            val item = hashMapOf(
+                inputItemName.text.toString() to itemDataClass(
                 inputItemCost.text.toString().toDouble(),
                 inputItemQuantity.text.toString().toInt()
+                )
             )
-            db.collection(userId).document(listName)
-
-            viewAdapter.notifyItemInserted(items.size - 1)
+            db.collection(userId).document(listName).set(item)
+            updateRecyclerView(userId)
         }
         //Sets the action when "Cancel" is pressed:
         builder.setNeutralButton("Cancel") { _, _ ->
@@ -213,6 +212,22 @@ class MainActivity : AppCompatActivity() {
         val dialog = builder.create()
         dialog.show()
 
+    }
+
+    private fun updateRecyclerView(userId: String) {
+//        Populate the RecyclerView with item list:
+        viewManager = LinearLayoutManager(this)
+        val dividerItemDecoration = DividerItemDecoration(
+            my_recycler_view.context,
+            1
+        )
+        val items = db.collection(userId).document(currentList).get()
+        viewAdapter = MyAdapter(items, currentList, "user_$userId", this)
+        recyclerView = my_recycler_view.apply {
+            layoutManager = viewManager
+            adapter = viewAdapter
+        }
+        my_recycler_view.addItemDecoration(dividerItemDecoration)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -235,31 +250,31 @@ class MainActivity : AppCompatActivity() {
         fun getLaunchIntent(from: Context) = Intent(from, MainActivity::class.java)
     }
 
-    //Internal function to add a new list item to the FireStore database
-    fun addItemToList(user : String, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
-
-        //Ensure user is logged in (their token is not null):
-        if (user != null){
-
-            val userDoc = db.collection("users").document(user)
-
-            //Update the list with the new entry:
-            val newEntry = object {
-                val itemName = itemName
-                val itemCost = itemCost
-                val itemQuantity = itemQuantity
-            }
-
-            userDoc.update(listName, FieldValue.arrayUnion(newEntry))
-
-            return
-
-        }
-        else{
-            finish()
-        }
-
-    }
+//    Internal function to add a new list item to the FireStore database
+//    fun addItemToList(user : String, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
+//
+//        //Ensure user is logged in (their token is not null):
+//        if (user != null){
+//
+//            val userDoc = db.collection("users").document(user)
+//
+//            //Update the list with the new entry:
+//            val newEntry = object {
+//                val itemName = itemName
+//                val itemCost = itemCost
+//                val itemQuantity = itemQuantity
+//            }
+//
+//            userDoc.update(listName, FieldValue.arrayUnion(newEntry))
+//
+//            return
+//
+//        }
+//        else{
+//            finish()
+//        }
+//
+//    }
 }
 
 

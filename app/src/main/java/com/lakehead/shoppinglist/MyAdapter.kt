@@ -79,8 +79,8 @@ class MyAdapter(
                 //Sets the action when "Submit" is pressed:
                 builder.setPositiveButton("Submit") { _, _ ->
                     //Get the raw input values to be added to the database:
-                    try{
-                        val itemTxt        = inputItemName.text.toString()
+
+                    val itemTxt        = inputItemName.text.toString()
                     val costAmt:Double = inputItemCost.text.toString().toDouble()
                     val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
                     //Add the entry to the list, first to FireStore then the local list in the same format:
@@ -94,9 +94,6 @@ class MyAdapter(
 
                     notifyItemInserted(itemCount - 1)
                     notifyItemRangeChanged(position, itemCount - position)
-                    } catch (e: Exception) {
-                        Toast.makeText(applicationContext, "Invalid Input. Make sure all fields are filled.", Toast.LENGTH_LONG).show()
-                    }
                 }
                 //Sets the action when "Cancel" is pressed:
                 builder.setNeutralButton("Cancel") { _, _ ->
@@ -111,7 +108,7 @@ class MyAdapter(
             }
 
         }else if (currentItem.size == 1)
-            nameView.text = "Empty Row"
+            nameView.text = "Invalid Entry"
         else
             nameView.text = "Item Listing Error"
 
@@ -134,6 +131,9 @@ class MyAdapter(
             val userDoc = db.collection("users").document(user)
 
             val entryToDelete = object {
+                val itemName = itemName
+                val itemQuantity = itemQuantity
+                val itemCost = itemCost
             }
 
             userDoc.update(listName, FieldValue.arrayRemove(entryToDelete))
@@ -159,6 +159,9 @@ class MyAdapter(
 
             //Update the list with the new entry:
             val newEntry = object {
+                val itemName = itemName
+                val itemCost = itemCost
+                val itemQuantity = itemQuantity
             }
 
             userDoc.update(listName, FieldValue.arrayUnion(newEntry))

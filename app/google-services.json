@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "670529527131-6jnhmdgpn0tp3olfj4336a8qo5bm8c27.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lakehead.shoppinglist",
+            "certificate_hash": "2a37b6dd933865342f3c52525cc02080e0c7c096"
+          }
+        },
+        {
           "client_id": "670529527131-cg3175qhflvoguha8c3lhk5ruch7cim8.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

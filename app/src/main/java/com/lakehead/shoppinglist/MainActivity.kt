@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.core.app.ComponentActivity.ExtraData
 import androidx.core.content.ContextCompat.getSystemService
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-
+import android.widget.LinearLayout
 
 
 class MainActivity : AppCompatActivity() {
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                         my_recycler_view.context,
                         1
                     )
-                    viewAdapter = MyAdapter(items, currentList,"user_$userId")
+                    viewAdapter = MyAdapter(items, currentList,"user_$userId", this)
                     recyclerView = my_recycler_view.apply {
                         layoutManager = viewManager
                         adapter = viewAdapter
@@ -95,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
                 //Populate the RecyclerView with item list:
                 viewManager = LinearLayoutManager(this)
-                viewAdapter = MyAdapter(items, currentList,"user_$userId")
+                viewAdapter = MyAdapter(items, currentList,"user_$userId", this)
                 recyclerView = my_recycler_view.apply {
                     layoutManager = viewManager
                     adapter = viewAdapter
@@ -106,48 +106,51 @@ class MainActivity : AppCompatActivity() {
         //Ensure the user has a FireStore document:
         createUser("user_$userId") //Should only create if the user does not already exist in FireStore
 
-        addNewItemBtnListener("user_$userId", currentList)
+        add_item_button.setOnClickListener {
+
+            addItemDialog("user_$userId", currentList)
+
+        }
 
     }
 
-    private fun addNewItemBtnListener(userId:String, listName:String) {
-        add_item_button.setOnClickListener {
+    fun addItemDialog(userId:String, listName:String){
 
-            //Create a new alert dialog
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Please enter item details:")
-            val inflater = layoutInflater
+        //Create a new alert dialog
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Please enter item details:")
+        val inflater = layoutInflater
 
-            //Get a layout for inputting multiple values:
-            val inputLayout = inflater.inflate(R.layout.input_item_view, null)
-            val inputItemName = inputLayout.findViewById<EditText>(R.id.inputName)
-            val inputItemCost = inputLayout.findViewById<EditText>(R.id.inputCost)
-            val inputItemQuantity = inputLayout.findViewById<EditText>(R.id.inputQuantity)
+        //Get a layout for inputting multiple values:
+        val inputLayout       = inflater.inflate(R.layout.input_item_view, null) as LinearLayout
+        val inputItemName     = inputLayout.findViewById<EditText>(R.id.inputName)
+        val inputItemCost     = inputLayout.findViewById<EditText>(R.id.inputCost)
+        val inputItemQuantity = inputLayout.findViewById<EditText>(R.id.inputQuantity)
 
-            builder.setView(inputLayout)
+        builder.setView(inputLayout)
 
-            //Sets the action when "Submit" is pressed:
-            builder.setPositiveButton("Submit") { _, _ ->
-                //Get the raw input values to be added to the database:
-                val itemTxt        = inputItemName.text.toString()
-                val costAmt:Double = inputItemCost.text.toString().toDouble()
-                val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
-                //Add the entry to the list, first to FireStore then the local list in the same format:
-                addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
-                items.add("$itemTxt\t$costAmt\t\$$quanAmt")
+        //Sets the action when "Submit" is pressed:
+        builder.setPositiveButton("Submit") { _, _ ->
+            //Get the raw input values to be added to the database:
+            val itemTxt        = inputItemName.text.toString()
+            val costAmt:Double = inputItemCost.text.toString().toDouble()
+            val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
+            //Add the entry to the list, first to FireStore then the local list in the same format:
+            addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
+            items.add("$itemTxt\t$quanAmt\t\$$costAmt")
 
-                viewAdapter.notifyItemInserted(items.size - 1)
-            }
-            //Sets the action when "Cancel" is pressed:
-            builder.setNeutralButton("Cancel") { _, _ ->
-                //Display a message to the user saying they cancelled input.
-                Toast.makeText(applicationContext, "Cancelled", Toast.LENGTH_LONG).show()
-            }
-
-            //Display the dialog box:
-            val dialog = builder.create()
-            dialog.show()
+            viewAdapter.notifyItemInserted(items.size - 1)
         }
+        //Sets the action when "Cancel" is pressed:
+        builder.setNeutralButton("Cancel") { _, _ ->
+            //Display a message to the user saying they cancelled input.
+            Toast.makeText(applicationContext, "Cancelled", Toast.LENGTH_LONG).show()
+        }
+
+        //Display the dialog box:
+        val dialog = builder.create()
+        dialog.show()
+
     }
 
     //Internal function to create a new user for the FireStore database

@@ -131,16 +131,31 @@ class MainActivity : AppCompatActivity() {
 
         //Sets the action when "Submit" is pressed:
         builder.setPositiveButton("Submit") { _, _ ->
-            val itemTxt        = inputItemName.text.toString()
-            val costAmt:Double = inputItemCost.text.toString().toDouble()
-            val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
+            val itemTxt:String
+            val quanAmt:Int
+            val costAmt:Double
             //Add the entry to the list, first to FireStore then the local list in the same format:
 
-                addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
+            if(inputItemName.text.isEmpty())
+                itemTxt = "No Name"
+            else
+                itemTxt = inputItemName.text.toString()
 
-                items.add("$itemTxt\t$quanAmt\t\$$costAmt")
+            if (inputItemQuantity.text.isEmpty())
+                quanAmt = 0
+            else
+                quanAmt = inputItemQuantity.text.toString().toInt()
 
-                viewAdapter.notifyItemInserted(items.size - 1)
+            if (inputItemCost.text.isEmpty())
+                costAmt = 0.00
+            else
+                costAmt = inputItemCost.text.toString().toDouble()
+
+            addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
+
+            items.add("$itemTxt\t$quanAmt\t\$$costAmt")
+
+            viewAdapter.notifyItemInserted(items.size - 1)
 
         }
         //Sets the action when "Cancel" is pressed:

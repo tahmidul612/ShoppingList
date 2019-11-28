@@ -61,8 +61,6 @@ class MyAdapter(
             editBtn.setOnClickListener{
 
                 //TODO: Write the edit function
-
-
                 //Create a new alert dialog
                 val builder = AlertDialog.Builder(applicationContext)
                 builder.setTitle("Please enter item details:")
@@ -78,16 +76,32 @@ class MyAdapter(
 
                 //Sets the action when "Submit" is pressed:
                 builder.setPositiveButton("Submit") { _, _ ->
-                    //Get the raw input values to be added to the database:
-
-                    val itemTxt        = inputItemName.text.toString()
-                    val costAmt:Double = inputItemCost.text.toString().toDouble()
-                    val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
+                    val itemTxt:String
+                    val quanAmt:Int
+                    val costAmt:Double
                     //Add the entry to the list, first to FireStore then the local list in the same format:
+
+                    if(inputItemName.text.isEmpty())
+                        itemTxt = "No Name"
+                    else
+                        itemTxt = inputItemName.text.toString()
+
+                    if (inputItemQuantity.text.isEmpty())
+                        quanAmt = 0
+                    else
+                        quanAmt = inputItemQuantity.text.toString().toInt()
+
+                    if (inputItemCost.text.isEmpty())
+                        costAmt = 0.00
+                    else
+                        costAmt = inputItemCost.text.toString().toDouble()
+
                     addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
+
                     dataSet.add("$itemTxt\t$quanAmt\t\$$costAmt")
-                        removeItemFromList(userId, listName, itemName, itemCost.toDouble(), itemQuantity.toInt())
-                        dataSet.removeAt(position)
+                    removeItemFromList(userId, listName, itemName, itemCost.toDouble(), itemQuantity.toInt())
+                    dataSet.removeAt(position)
+
                     //Update the view to reflect changes:
                     notifyItemRemoved(position)
                     notifyItemRangeChanged(position, itemCount - position)
@@ -108,7 +122,7 @@ class MyAdapter(
             }
 
         }else if (currentItem.size == 1)
-            nameView.text = "Invalid Entry"
+            nameView.text = currentItem[0]
         else
             nameView.text = "Item Listing Error"
 

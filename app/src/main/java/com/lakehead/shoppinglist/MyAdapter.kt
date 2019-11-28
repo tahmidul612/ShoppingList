@@ -40,7 +40,19 @@ class MyAdapter(private var dataSet: MutableList<String>, var listName:String, v
 
             deleteBtn.setOnClickListener{
 
-                //removeItemFromList(userId, listName, currentItem[0], currentItem[2].toDouble(), currentItem[1].toInt())
+                val deleteitemName = currentItem[0]
+                val deleteitemQuantity= currentItem[1]
+                var deleteitemCost = currentItem[2]
+                //Remove the $ from cost to make sure toDouble() does not cause a crash:
+                deleteitemCost = deleteitemCost.replace("\$", "")
+
+                //Update the FireStore database, then the local dataset to reflect those changes:
+                removeItemFromList(userId, listName, deleteitemName, deleteitemCost.toDouble(), deleteitemQuantity.toInt())
+                dataSet.removeAt(position)
+
+                //Update the view to reflect changes:
+                notifyItemRemoved(position)
+                notifyItemRangeChanged(position, itemCount - position)
 
             }
 

@@ -132,8 +132,10 @@ class MainActivity : AppCompatActivity() {
                 val itemTxt        = inputItemName.text.toString()
                 val costAmt:Double = inputItemCost.text.toString().toDouble()
                 val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
-                //Add the entry to the list
+                //Add the entry to the list, first to FireStore then the local list in the same format:
                 addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
+                items.add("$itemTxt\t$costAmt\t\$$quanAmt")
+
                 viewAdapter.notifyItemInserted(items.size - 1)
             }
             //Sets the action when "Cancel" is pressed:
@@ -218,7 +220,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     //Internal function to add a new list item to the FireStore database
-    fun addItemToList(user : String?, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
+    fun addItemToList(user : String, listName: String, itemName: String, itemCost: Double, itemQuantity: Int){
 
         //Ensure user is logged in (their token is not null):
         if (user != null){

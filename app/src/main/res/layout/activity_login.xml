@@ -30,4 +30,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/anonymousSignIn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorLightGrey"
+        android:gravity="bottom"
+        android:text="@string/anonymous_sign_in_button" />
+
 </LinearLayout>

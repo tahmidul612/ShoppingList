@@ -45,8 +45,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     companion object {
-        fun getLaunchIntent(from: Context) = Intent(from, MapsActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
+        fun getLaunchIntent(from: Context) = Intent(from, MapsActivity::class.java)
     }
 }

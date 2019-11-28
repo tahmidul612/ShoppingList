@@ -18,32 +18,27 @@ import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivity : AppCompatActivity() {
 
-    val RC_SIGN_IN: Int = 1
+    private val signInRequestCode: Int = 1
     private lateinit var firebaseAuth: FirebaseAuth
-    lateinit var mGoogleSignInClient: GoogleSignInClient
-    lateinit var mGoogleSignInOptions: GoogleSignInOptions
+    private lateinit var mGoogleSignInClient: GoogleSignInClient
+    private lateinit var mGoogleSignInOptions: GoogleSignInOptions
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
-        google_button.setSize(SignInButton.SIZE_STANDARD)
-        configureGoogleSignIn()
-        setupUI()
         firebaseAuth = FirebaseAuth.getInstance()
-    }
-
-    override fun onStart() {
-        super.onStart()
-
+        val user = firebaseAuth.currentUser
         //Check to see if the user is already signed in (non-null):
-        val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
-            val userId:String = user.uid
-            val intent = Intent(this, MainActivity::class.java)
+            val userId: String = user.uid
+            val intent = MainActivity.getLaunchIntent(this)
             intent.putExtra("userId", userId)
             startActivity(intent)
+        } else {
+            setContentView(R.layout.activity_login)
+            google_button.setSize(SignInButton.SIZE_STANDARD)
+            configureGoogleSignIn()
+            setupUI()
         }
-
     }
 
     private fun configureGoogleSignIn() {
@@ -55,22 +50,37 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
+        //Set up anonymous sign in button
+        anonymousSignIn.setOnClickListener {
+            firebaseAuth.signInAnonymously()
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        val user = firebaseAuth.currentUser
+                        val intent = MainActivity.getLaunchIntent(this)
+                        intent.putExtra("userId", user?.uid)
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(this, "Anonymous sign in failed", Toast.LENGTH_LONG).show()
+                    }
+                }
+        }
+
+        //Set up sign in with google button
         google_button.setOnClickListener {
             signIn()
         }
     }
 
-    //Function to sign in existing users for the app:
+    //Function to sign in/sign up users using the Google Account for the app:
     private fun signIn() {
-        val signInIntent: Intent = mGoogleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
+        startActivityForResult(mGoogleSignInClient.signInIntent, signInRequestCode)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         //Result from Google Login Activity
-        if (requestCode == RC_SIGN_IN) {
+        if (requestCode == signInRequestCode) {
             val task: Task<GoogleSignInAccount> = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 val account = task.getResult(ApiException::class.java)
@@ -100,8 +110,6 @@ class LoginActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun getLaunchIntent(from: Context) = Intent(from, LoginActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
+        fun getLaunchIntent(from: Context) = Intent(from, LoginActivity::class.java)
     }
 }

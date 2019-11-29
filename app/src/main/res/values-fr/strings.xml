@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LuList</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="anonymous_sign_in_button">Passer la connexion</string>
+    <string name="cost">Coût</string>
+    <string name="deleteItem_contentDescription">Effacer l\'article</string>
+    <string name="editButton_contentDescription">Modifier l\'article</string>
+    <string name="loginActivityAppTitle">LuList - Liste de courses facile</string>
+    <string name="loginActivitySignInMessage">Bienvenue, veuillez vous connecter.</string>
+    <string name="map_button_text">Ouvrir la carte</string>
+    <string name="name">Nom</string>
+    <string name="quantity">Quantité</string>
+    <string name="sign_out">Déconnexion</string>
+    <string name="titleBarAppName">LuList - Liste de courses facile</string>
+    <string name="title_activity_maps">Carte</string>
+</resources>

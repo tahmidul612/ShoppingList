@@ -3,15 +3,14 @@ package com.lakehead.shoppinglist
 import android.app.Activity
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class MyAdapter(
-    private var dataSet: HashMap<String, MainActivity.itemDataClass>,
-    var listName: String,
-    var userId: String,
+    private val itemName: String,
+    private val itemCost: Double,
+    private val itemQuantity: Int,
     var applicationContext: Activity
 ) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
@@ -21,7 +20,6 @@ class MyAdapter(
 
         val layoutView = LayoutInflater.from(parent.context)
             .inflate(R.layout.recycler_view_item, parent, false) as LinearLayout
-
         return MyViewHolder(layoutView)
     }
 
@@ -30,16 +28,15 @@ class MyAdapter(
         val nameView: TextView = holder.layoutView.getChildAt(0) as TextView
         val quanView: TextView = holder.layoutView.getChildAt(1) as TextView
         val costView: TextView = holder.layoutView.getChildAt(2) as TextView
-        val editBtn: ImageButton = holder.layoutView.getChildAt(3) as ImageButton
-        val deleteBtn: ImageButton = holder.layoutView.getChildAt(4) as ImageButton
 
-        nameView.text = dataSet.keys.elementAt(position)
-        quanView.text = dataSet.keys.elementAt(position).
+        nameView.text = itemName
+        quanView.text = itemCost.toString()
+        costView.text = itemQuantity.toString()
 
     }
 
     override fun getItemCount(): Int {
-        return dataSet.count()
+        return 1
     }
 
 

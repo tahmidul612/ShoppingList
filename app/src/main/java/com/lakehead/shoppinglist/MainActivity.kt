@@ -57,110 +57,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    //Internal function to create a new user for the FireStore database
-//    private fun createUserDocument(user:String){
-//
-//        //Check to see if a user already exists by retrieving info from FireStore:
-//        val userRef = db.collection("users").document(user)
-//        userRef.get()
-//            .addOnSuccessListener { document ->
-//                if (document.exists()) {
-//
-//                    //Welcomes back an existing user
-//                    Toast.makeText(applicationContext, "Welcome Back!", Toast.LENGTH_LONG).show();
-//
-//                }
-//                else //The user does not exist, create them:
-//                {
-//
-//                    //Create a temporary entry to define the structure of the list entries:
-//                    val tempEntry = hashMapOf(
-//                        "itemName" to "Blah",
-//                        "itemCost" to 3.00,
-//                        "itemQuantity" to 1
-//                    )
-//
-//                    val data = hashMapOf(
-//
-//                        "list1" to hashMapOf(
-//                            "0" to tempEntry
-//                        )
-//
-//                    )
-//
-//                    //Create the user file if it does not exist, and add the starting list
-//                    db.collection("users").document(user).set(data, SetOptions.merge())
-//
-//                    //Remove the temporary entry: will convert list from hashmap to an array internally within FireStore.
-//                    db.collection("users").document(user).update("list1", FieldValue.arrayRemove(tempEntry))
-//
-//                    Toast.makeText(applicationContext, "Created a starting list for you!",Toast.LENGTH_LONG).show()
-//
-//                }
-//            }
-//            .addOnFailureListener { exception ->
-//                Toast.makeText(applicationContext, "Error connecting to the database.", Toast.LENGTH_LONG).show()
-//            }
-//
-//    }
-//
-//    private fun createList(userId: String?) {
-//        db.collection("users").document("user_$userId")
-//            .get()
-//            .addOnSuccessListener { document ->
-//                if (document.data != null) {
-//
-//                    //get the list data
-//                    var data = document.data!![currentList].toString()
-//
-//                    //TODO: Create a regex to replace this ugly shit:
-//                    //Remove unwanted tokens:
-//                    data = data.replace("{", "")
-//                    data = data.replace("}", "")
-//                    data = data.replace("[", "")
-//                    data = data.replace("]", "")
-//                    data = data.replace(",", "")
-//                    data = data.replace(" ", "")
-//                    //Replace itemQuantity and itemCost labels:
-//                    data = data.replace("itemQuantity=", "\t")
-//                    data = data.replace("itemCost=", "\t\$")
-//
-//                    //TODO: parse the new items into mutable list of strings more efficiently
-//                    //Split the string into a mutable list of strings, separated by entry
-//                    val newItems = data.split("itemName=")
-//                    items = newItems.toMutableList();
-//
-//                    //Remove the first item in the list, which for some reason is always empty.
-//                    if (items[0].isBlank())
-//                        items.removeAt(0)
-//
-//                    //Populate the RecyclerView with item list:
-//                    viewManager = LinearLayoutManager(this)
-//                    val dividerItemDecoration = DividerItemDecoration(
-//                        my_recycler_view.context,
-//                        1
-//                    )
-//                    viewAdapter = MyAdapter(items, currentList,"user_$userId", this)
-//                    recyclerView = my_recycler_view.apply {
-//                        layoutManager = viewManager
-//                        adapter = viewAdapter
-//                    }
-//                    my_recycler_view.addItemDecoration(dividerItemDecoration)
-//
-//                }
-//            }.addOnFailureListener{
-//
-//                //Populate the RecyclerView with item list:
-//                viewManager = LinearLayoutManager(this)
-//                viewAdapter = MyAdapter(items, currentList,"user_$userId", this)
-//                recyclerView = my_recycler_view.apply {
-//                    layoutManager = viewManager
-//                    adapter = viewAdapter
-//                }
-//
-//            }
-//    }
-
     data class itemDataClass(
         val itemCost: Double? = null,
         val itemQuantity: Int? = null
@@ -175,32 +71,24 @@ class MainActivity : AppCompatActivity() {
 
         //Get a layout for inputting multiple values:
         val inputLayout = inflater.inflate(R.layout.input_item_view, null) as LinearLayout
-        val inputItemName     = inputLayout.findViewById<EditText>(R.id.inputName)
-        val inputItemCost     = inputLayout.findViewById<EditText>(R.id.inputCost)
-        val inputItemQuantity = inputLayout.findViewById<EditText>(R.id.inputQuantity)
+        val inputItemNameLayout = inputLayout.findViewById<EditText>(R.id.inputName)
+        val inputItemCostLayout = inputLayout.findViewById<EditText>(R.id.inputCost)
+        val inputItemQuantityLayout = inputLayout.findViewById<EditText>(R.id.inputQuantity)
 
         builder.setView(inputLayout)
 
         //Sets the action when "Submit" is pressed:
         builder.setPositiveButton("Submit") { _, _ ->
-            //Get the raw input values to be added to the database:
-//            val itemTxt  = inputItemName.text.toString()
-//            val costAmt:Double = inputItemCost.text.toString().toDouble()
-//            val quanAmt:Int    = inputItemQuantity.text.toString().toInt()
 
-//            //Add the entry to the list, first to FireStore then the local list in the same format:
-//            addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
-//            items.add("$itemTxt\t$quanAmt\t\$$costAmt")
+            val inputItemName = inputItemNameLayout.text.toString()
+            val inputItemCost = inputItemCostLayout.text.toString().toDouble()
+            val inputItemQuantity = inputItemQuantityLayout.text.toString().toInt()
+            val item = itemDataClass(inputItemCost, inputItemQuantity)
 
-            //Using a data class to store data
-            val item = hashMapOf(
-                inputItemName.text.toString() to itemDataClass(
-                inputItemCost.text.toString().toDouble(),
-                inputItemQuantity.text.toString().toInt()
-                )
-            )
-            db.collection(userId).document(listName).set(item)
-            updateRecyclerView(userId)
+            db
+                .collection("users").document(userId)
+                .collection(listName).document(inputItemName).set(item)
+            updateRecyclerView(userId, inputItemName, inputItemCost, inputItemQuantity)
         }
         //Sets the action when "Cancel" is pressed:
         builder.setNeutralButton("Cancel") { _, _ ->
@@ -214,20 +102,30 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun updateRecyclerView(userId: String) {
+    private fun updateRecyclerView(
+        userId: String,
+        itemName: String,
+        itemCost: Double,
+        itemQuantity: Int
+    ) {
 //        Populate the RecyclerView with item list:
         viewManager = LinearLayoutManager(this)
         val dividerItemDecoration = DividerItemDecoration(
             my_recycler_view.context,
             1
         )
-        val items = db.collection(userId).document(currentList).get()
-        viewAdapter = MyAdapter(items, currentList, "user_$userId", this)
-        recyclerView = my_recycler_view.apply {
-            layoutManager = viewManager
-            adapter = viewAdapter
-        }
-        my_recycler_view.addItemDecoration(dividerItemDecoration)
+        db
+            .collection("users").document(userId)
+            .collection(currentList).document(itemName).get()
+            .addOnSuccessListener { documentSnapshot ->
+                val item = documentSnapshot.toObject(itemDataClass::class.java)
+                viewAdapter = MyAdapter(itemName, itemCost, itemQuantity, this)
+                recyclerView = my_recycler_view.apply {
+                    layoutManager = viewManager
+                    adapter = viewAdapter
+                }
+                my_recycler_view.addItemDecoration(dividerItemDecoration)
+            }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

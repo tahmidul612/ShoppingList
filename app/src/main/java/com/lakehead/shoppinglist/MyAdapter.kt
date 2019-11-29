@@ -8,10 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class MyAdapter(
-    private val itemName: String,
-    private val itemCost: Double,
-    private val itemQuantity: Int,
-    var applicationContext: Activity
+    private var dataSet: MutableMap<String, MainActivity.itemData>,
+    private var listName: String,
+    private var userId: String?,
+    private var applicationContext: Activity
 ) : RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     class MyViewHolder(val layoutView: LinearLayout) : RecyclerView.ViewHolder(layoutView)
@@ -29,15 +29,34 @@ class MyAdapter(
         val quanView: TextView = holder.layoutView.getChildAt(1) as TextView
         val costView: TextView = holder.layoutView.getChildAt(2) as TextView
 
-        nameView.text = itemName
-        quanView.text = itemCost.toString()
-        costView.text = itemQuantity.toString()
+        val currentItem = dataSet.toList()[position]
+
+        nameView.text = currentItem.first
+        quanView.text = currentItem.second.itemQuantity.toString()
+        costView.text = currentItem.second.itemCost.toString()
+        //Removed the $ from cost to make sure toDouble() does not cause a crash
+
+//            deleteBtn.setOnClickListener{
+//
+//                //Update the FireStore database, then the local dataset to reflect those changes:
+//                removeItemFromList(userId, listName, itemName, itemCost.toDouble(), itemQuantity.toInt())
+//                dataSet.removeAt(position)
+//
+//                //Update the view to reflect changes:
+//                notifyItemRemoved(position)
+//                notifyItemRangeChanged(position, itemCount - position)
+//
+//            }
+
 
     }
 
     override fun getItemCount(): Int {
-        return 1
+        return dataSet.count()
     }
 
-
+    fun removeAt(adapterPosition: Int) {
+        notifyItemRemoved(adapterPosition)
+        notifyItemRangeChanged(adapterPosition, itemCount - adapterPosition)
+    }
 }

@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.firestore.FirebaseFirestore
@@ -36,6 +37,8 @@ class MainActivity : AppCompatActivity() {
         val itemQuantity: Int
     )
 
+    private var itemList = mutableMapOf<String, itemData>()
+
     private var currentList: String = "Primary List"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,61 +51,6 @@ class MainActivity : AppCompatActivity() {
             addItemDialog("user_$userId", currentList)
         }
 
-        // Access FireStore and create a list of items
-        val userDoc = db.collection("users").document("user_$userId")
-            .get()
-            .addOnSuccessListener { document ->
-                if (document.data != null) {
-
-                    //get the list data
-                    var data = document.data!![currentList].toString()
-
-                    //TODO: Create a regex to replace this ugly shit:
-                    //Remove unwanted tokens:
-                    data = data.replace("{", "")
-                    data = data.replace("}", "")
-                    data = data.replace("[", "")
-                    data = data.replace("]", "")
-                    data = data.replace(",", "")
-                    data = data.replace(" ", "")
-                    //Replace itemQuantity and itemCost labels:
-                    data = data.replace("itemQuantity=", "\t")
-                    data = data.replace("itemCost=", "\t\$")
-
-                    //TODO: parse the new items into mutable list of strings more efficiently
-                    //Split the string into a mutable list of strings, separated by entry
-                    val newItems = data.split("itemName=")
-                    items = newItems.toMutableList()
-
-                    //Remove the first item in the list, which for some reason is always empty.
-                    if (items[0].isBlank())
-                        items.removeAt(0)
-
-                    //Populate the RecyclerView with item list:
-                    viewManager = LinearLayoutManager(this)
-                    val dividerItemDecoration = DividerItemDecoration(
-                        my_recycler_view.context,
-                        1
-                    )
-                    viewAdapter = MyAdapter(items, currentList,"user_$userId", this)
-                    recyclerView = my_recycler_view.apply {
-                        layoutManager = viewManager
-                        adapter = viewAdapter
-                    }
-                    my_recycler_view.addItemDecoration(dividerItemDecoration)
-
-                }
-            }.addOnFailureListener{
-
-                //Populate the RecyclerView with item list:
-                viewManager = LinearLayoutManager(this)
-                viewAdapter = MyAdapter(items, currentList,"user_$userId", this)
-                recyclerView = my_recycler_view.apply {
-                    layoutManager = viewManager
-                    adapter = viewAdapter
-                }
-
-            }
     }
 
     private fun checkUserSignIn(): String? {
@@ -158,6 +106,7 @@ class MainActivity : AppCompatActivity() {
                 quanAmt = inputItemQuantity.text.toString().toInt()
 
             addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
+            addToRecyclerView(userId, listName, itemTxt)
 
         }
         //Sets the action when "Cancel" is pressed:
@@ -179,10 +128,51 @@ class MainActivity : AppCompatActivity() {
         itemQuantity: Int
     ) {
         val item = itemData(itemCost, itemQuantity)
+        itemList[itemName] = item
         db
             .collection("users").document("user_$user")
             .collection(listName).document(itemName)
             .set(item)
+    }
+
+    private fun addToRecyclerView(
+        user: String?,
+        listName: String,
+        itemName: String
+    ) {
+        viewManager = LinearLayoutManager(this)
+        val dividerItemDecoration = DividerItemDecoration(
+            my_recycler_view.context,
+            1
+        )
+        viewAdapter = MyAdapter(itemList, listName, user, this)
+        recyclerView = my_recycler_view.apply {
+            layoutManager = viewManager
+            adapter = viewAdapter
+        }
+        my_recycler_view.addItemDecoration(dividerItemDecoration)
+        viewAdapter.notifyItemInserted(viewManager.childCount - 1)
+        val swipeHandler = object : SwipeToDeleteCallback(this) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val adapter = recyclerView.adapter as MyAdapter
+                adapter.removeAt(viewHolder.adapterPosition)
+                removeFromDatabase(user, listName, itemName)
+            }
+        }
+        val itemTouchHelper = ItemTouchHelper(swipeHandler)
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+    }
+
+    private fun removeFromDatabase(
+        user: String?,
+        listName: String,
+        itemName: String
+    ) {
+        itemList.remove(itemName)
+        db
+            .collection("users").document("user_$user")
+            .collection(listName).document(itemName).delete()
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -194,8 +184,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item!!.itemId) {
             R.id.app_bar_settings -> {
-                val settingsIntent = Intent(this, SettingsActivity::class.java)
-                startActivity(settingsIntent)
+                startActivity(SettingsActivity.getLaunchIntent(this))
             }
         }
         return true
@@ -220,7 +209,7 @@ class MainActivity : AppCompatActivity() {
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = CHANNEL_ID
-            val descriptionText = "bitch"
+            val descriptionText = "Come back to the app"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
@@ -250,5 +239,3 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
-
-

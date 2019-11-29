@@ -1,5 +1,7 @@
 package com.lakehead.shoppinglist
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -19,5 +21,9 @@ class SettingsActivity : AppCompatActivity() {
         google_map_button.setOnClickListener {
             startActivity(MapsActivity.getLaunchIntent(this))
         }
+    }
+
+    companion object {
+        fun getLaunchIntent(from: Context) = Intent(from, SettingsActivity::class.java)
     }
 }

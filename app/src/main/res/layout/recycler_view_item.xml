@@ -33,20 +33,6 @@
         android:paddingBottom="8dp"
         android:textSize="16sp" />
 
-    <ImageButton
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
-        android:src="@drawable/icon_edit"
-        android:contentDescription="@string/editButton_contentDescription" />
-
-    <ImageButton
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
-        android:src="@drawable/icon_delete"
-        android:contentDescription="@string/deleteItem_contentDescription" />
-
 
 </LinearLayout>
 

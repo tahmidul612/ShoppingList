@@ -19,9 +19,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -32,24 +30,22 @@ class MainActivity : AppCompatActivity() {
 
     //Connect to FireStore Database to Retrieve List Items:
     private val db = FirebaseFirestore.getInstance()
-    private var items:MutableList<String> = mutableListOf("Add a new Entry!")
-    private var currentList:String = "list1"
+
+    data class itemData(
+        val itemCost: Double,
+        val itemQuantity: Int
+    )
+
+    private var currentList: String = "Primary List"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(bottom_app_bar)
         createNotificationChannel()
-        //Ensure user is logged in:
-
-        val userId:String? = intent.getStringExtra("userId")
-        if (userId == null){
-            //User ID not found, return user to the login activity to re-sign-in.
-            finish()
-            startActivity(LoginActivity.getLaunchIntent(applicationContext))
-        }else{
-            //User ID found, activity can continue.
-            Toast.makeText(applicationContext, "Signed in with UID $userId", Toast.LENGTH_LONG).show()
+        val userId = checkUserSignIn()
+        add_item_button.setOnClickListener {
+            addItemDialog("user_$userId", currentList)
         }
 
         // Access FireStore and create a list of items
@@ -107,14 +103,20 @@ class MainActivity : AppCompatActivity() {
                 }
 
             }
+    }
 
-        //Ensure the user has a FireStore document:
-        createUser("user_$userId") //Should only create if the user does not already exist in FireStore
-
-        add_item_button.setOnClickListener {
-            addItemDialog("user_$userId", currentList)
-
+    private fun checkUserSignIn(): String? {
+        val userId: String? = intent.getStringExtra("userId")
+        if (userId == null) {
+            //User ID not found, return user to the login activity to re-sign-in.
+            finish()
+            startActivity(LoginActivity.getLaunchIntent(applicationContext))
+        } else {
+            //User ID found, activity can continue.
+            Toast.makeText(applicationContext, "Signed in with UID $userId", Toast.LENGTH_LONG)
+                .show()
         }
+        return userId
     }
 
 
@@ -145,21 +147,17 @@ class MainActivity : AppCompatActivity() {
             else
                 itemTxt = inputItemName.text.toString()
 
-            if (inputItemQuantity.text.isEmpty())
-                quanAmt = 0
-            else
-                quanAmt = inputItemQuantity.text.toString().toInt()
-
             if (inputItemCost.text.isEmpty())
                 costAmt = 0.00
             else
                 costAmt = inputItemCost.text.toString().toDouble()
 
+            if (inputItemQuantity.text.isEmpty())
+                quanAmt = 0
+            else
+                quanAmt = inputItemQuantity.text.toString().toInt()
+
             addItemToList(userId, listName, itemTxt, costAmt, quanAmt)
-
-            items.add("$itemTxt\t$quanAmt\t\$$costAmt")
-
-            viewAdapter.notifyItemInserted(items.size - 1)
 
         }
         //Sets the action when "Cancel" is pressed:
@@ -171,54 +169,20 @@ class MainActivity : AppCompatActivity() {
         //Display the dialog box:
         val dialog = builder.create()
         dialog.show()
-
     }
 
-    //Internal function to create a new user for the FireStore database
-    private fun createUser(user:String){
-
-        //Check to see if a user already exists by retrieving info from FireStore:
-        val userRef = db.collection("users").document(user)
-        userRef.get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-
-                    //Welcomes back an existing user
-                    Toast.makeText(applicationContext, "Welcome Back!", Toast.LENGTH_LONG).show()
-
-                }
-                else //The user does not exist, create them:
-                {
-
-                    //Create a temporary entry to define the structure of the list entries:
-                    val tempEntry = hashMapOf(
-                        "itemName" to "Blah",
-                        "itemCost" to 3.00,
-                        "itemQuantity" to 1
-                    )
-
-                    val data = hashMapOf(
-
-                        "list1" to hashMapOf(
-                            "0" to tempEntry
-                        )
-
-                    )
-
-                    //Create the user file if it does not exist, and add the starting list
-                    db.collection("users").document(user).set(data, SetOptions.merge())
-
-                    //Remove the temporary entry: will convert list from hashmap to an array internally within FireStore.
-                    db.collection("users").document(user).update("list1", FieldValue.arrayRemove(tempEntry))
-
-                    Toast.makeText(applicationContext, "Created a starting list for you!",Toast.LENGTH_LONG).show()
-
-                }
-            }
-            .addOnFailureListener {
-                Toast.makeText(applicationContext, "Error connecting to the database.", Toast.LENGTH_LONG).show()
-            }
-
+    private fun addItemToList(
+        user: String?,
+        listName: String,
+        itemName: String,
+        itemCost: Double,
+        itemQuantity: Int
+    ) {
+        val item = itemData(itemCost, itemQuantity)
+        db
+            .collection("users").document("user_$user")
+            .collection(listName).document(itemName)
+            .set(item)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -238,41 +202,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        fun getLaunchIntent(from: Context) = Intent(from, MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
-    }
-
-    //Internal function to add a new list item to the FireStore database
-    private fun addItemToList(
-        user: String?,
-        listName: String,
-        itemName: String,
-        itemCost: Double,
-        itemQuantity: Int
-    ) {
-
-        //Ensure user is logged in (their token is not null):
-        if (user != null){
-
-            val userDoc = db.collection("users").document(user)
-
-            //Update the list with the new entry:
-            val newEntry = object {
-                val itemName = itemName
-                val itemQuantity = itemQuantity
-                val itemCost = itemCost
-            }
-
-            userDoc.update(listName, FieldValue.arrayUnion(newEntry))
-
-            return
-
-        }
-        else{
-            finish()
-        }
-
+        fun getLaunchIntent(from: Context) = Intent(from, MainActivity::class.java)
     }
 
     private val CHANNEL_ID = "personal_notifications"
